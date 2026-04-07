@@ -644,7 +644,7 @@
         <div class="fade-in">
           <div class="bg-gray-50 rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm">
             <h3 class="text-xl font-bold text-navy-800 mb-6">Schedule Your Demo</h3>
-            <form id="contactForm" class="space-y-5">
+            <form id="contactForm" action="https://formspree.io/f/chris@carscu.com" method="POST" class="space-y-5">
               <div class="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
@@ -758,20 +758,39 @@
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
     // Form submission
-    document.getElementById('contactForm').addEventListener('submit', (e) => {
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = 'Thank You! We\'ll Be in Touch.';
-      btn.classList.remove('bg-accent-500', 'hover:bg-accent-600');
-      btn.classList.add('bg-success-600');
+      const form = e.target;
+      btn.textContent = 'Sending...';
       btn.disabled = true;
-      setTimeout(() => {
-        btn.textContent = 'Schedule My Demo';
-        btn.classList.add('bg-accent-500', 'hover:bg-accent-600');
-        btn.classList.remove('bg-success-600');
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+          btn.textContent = 'Thank You! We\'ll Be in Touch.';
+          btn.classList.remove('bg-accent-500', 'hover:bg-accent-600');
+          btn.classList.add('bg-success-600');
+          form.reset();
+          setTimeout(() => {
+            btn.textContent = 'Schedule My Demo';
+            btn.classList.add('bg-accent-500', 'hover:bg-accent-600');
+            btn.classList.remove('bg-success-600');
+            btn.disabled = false;
+          }, 4000);
+        } else {
+          btn.textContent = 'Error - Please Try Again';
+          btn.disabled = false;
+          setTimeout(() => { btn.textContent = 'Schedule My Demo'; }, 3000);
+        }
+      } catch (err) {
+        btn.textContent = 'Error - Please Try Again';
         btn.disabled = false;
-        e.target.reset();
-      }, 3000);
+        setTimeout(() => { btn.textContent = 'Schedule My Demo'; }, 3000);
+      }
     });
 
     // Navbar background on scroll
